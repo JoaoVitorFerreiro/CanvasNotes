@@ -14,7 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      folders: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notes: {
+        Row: {
+          canvas_background: string | null
+          content: string | null
+          created_at: string
+          folder_id: string
+          github_path: string | null
+          id: string
+          synced_at: string | null
+          thumbnail: string | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          canvas_background?: string | null
+          content?: string | null
+          created_at?: string
+          folder_id: string
+          github_path?: string | null
+          id?: string
+          synced_at?: string | null
+          thumbnail?: string | null
+          title?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          canvas_background?: string | null
+          content?: string | null
+          created_at?: string
+          folder_id?: string
+          github_path?: string | null
+          id?: string
+          synced_at?: string | null
+          thumbnail?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          github_avatar_url: string | null
+          github_username: string | null
+          id: string
+          selected_repo: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          github_avatar_url?: string | null
+          github_username?: string | null
+          id: string
+          selected_repo?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          github_avatar_url?: string | null
+          github_username?: string | null
+          id?: string
+          selected_repo?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
