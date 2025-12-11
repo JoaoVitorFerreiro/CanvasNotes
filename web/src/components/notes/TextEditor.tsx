@@ -5,7 +5,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Link from '@tiptap/extension-link';
-import { 
+import {
   ArrowLeft,
   Save,
   Bold,
@@ -21,28 +21,30 @@ import {
   Quote,
   Code,
   Undo2,
-  Redo2
+  Redo2,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Note } from '@/types/notes';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
-import { useDebouncedCallback } from '@/hooks/useDebounce';
 
 interface TextEditorProps {
   note: Note;
-  onSave: (content: string) => void;
+  onSave: (content: string, title: string) => void;
   onUpdateTitle: (title: string) => void;
   onClose: () => void;
 }
 
-export function TextEditor({ 
-  note, 
-  onSave, 
+export function TextEditor({
+  note,
+  onSave,
   onUpdateTitle,
-  onClose 
+  onClose
 }: TextEditorProps) {
   const [title, setTitle] = useState(note.title);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -70,25 +72,49 @@ export function TextEditor({
     },
   });
 
-  const debouncedSave = useDebouncedCallback((content: string) => {
-    onSave(content);
-  }, 1000);
-
   useEffect(() => {
     if (editor) {
       editor.on('update', () => {
-        const html = editor.getHTML();
-        debouncedSave(html);
+        setHasUnsavedChanges(true);
       });
     }
-  }, [editor, debouncedSave]);
+  }, [editor]);
 
-  const handleSave = () => {
-    if (editor) {
-      onSave(editor.getHTML());
-      onUpdateTitle(title);
+  const handleSave = async () => {
+    if (!editor || isSaving) return;
+
+    setIsSaving(true);
+    try {
+      // Save everything together in a single update
+      await onSave(editor.getHTML(), title);
+      setHasUnsavedChanges(false);
+    } catch (error) {
+      console.error('[TextEditor] Save failed:', error);
+    } finally {
+      setIsSaving(false);
     }
   };
+
+  const handleClose = () => {
+    if (hasUnsavedChanges) {
+      const confirmClose = window.confirm('Você tem alterações não salvas. Deseja sair sem salvar?');
+      if (!confirmClose) return;
+    }
+    onClose();
+  };
+
+  // Warn before leaving page with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   const addLink = useCallback(() => {
     if (!editor) return;
@@ -132,14 +158,17 @@ export function TextEditor({
       <header className="h-16 border-b border-border flex items-center justify-between px-4 bg-card">
         <div className="flex items-center gap-4">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 rounded-xl hover:bg-secondary transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <Input
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              setHasUnsavedChanges(true);
+            }}
             className="max-w-xs font-semibold border-none bg-transparent text-lg focus-visible:ring-0"
             placeholder="Note title..."
           />
@@ -169,10 +198,23 @@ export function TextEditor({
           <div className="w-px h-6 bg-border mx-2" />
           <button
             onClick={handleSave}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-medium"
+            disabled={isSaving || !hasUnsavedChanges}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-medium",
+              (isSaving || !hasUnsavedChanges) && "opacity-50 cursor-not-allowed"
+            )}
           >
-            <Save className="w-4 h-4" />
-            Save
+            {isSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Salvando...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                {hasUnsavedChanges ? 'Salvar' : 'Salvo'}
+              </>
+            )}
           </button>
         </div>
       </header>
@@ -272,6 +314,7 @@ export function TextEditor({
           </div>
         </div>
       </div>
+
     </div>
   );
 }

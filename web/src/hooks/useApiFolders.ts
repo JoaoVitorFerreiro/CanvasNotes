@@ -16,7 +16,13 @@ export function useApiFolders() {
 	const { toast } = useToast();
 
 	useEffect(() => {
-		loadFolders();
+		// Only load folders if we have an auth token
+		const token = localStorage.getItem("auth_token");
+		if (token) {
+			loadFolders();
+		} else {
+			setIsLoading(false);
+		}
 	}, []);
 
 	const loadFolders = async () => {

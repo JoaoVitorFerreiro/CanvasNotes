@@ -1,5 +1,5 @@
-import { authAPI } from "@/services/api";
 import { useEffect, useState } from "react";
+import { authAPI } from "@/services/api";
 import { useToast } from "./use-toast";
 
 interface User {

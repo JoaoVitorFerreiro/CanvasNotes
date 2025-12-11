@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { DrawingEditor } from "@/components/notes/DrawingEditor";
 import { MobileHeader } from "@/components/notes/MobileHeader";
@@ -11,22 +13,18 @@ import { useApiNotes } from "@/hooks/useApiNotes";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 import { CanvasBackground, NoteType } from "@/types/notes";
-import { useEffect, useState } from "react";
 
 const ApiIndex = () => {
-	const {
-		user,
-		isLoading: authLoading,
-		register,
-		login,
-		signOut,
-	} = useApiAuth();
+	const { noteId: urlNoteId } = useParams<{ noteId?: string }>();
+	const navigate = useNavigate();
+	const { user, isLoading: authLoading, register, login } = useApiAuth();
 	const {
 		folders,
 		isLoading: foldersLoading,
 		createFolder,
 		renameFolder,
 		deleteFolder,
+		refreshFolders,
 	} = useApiFolders();
 	const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
 	const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
@@ -37,7 +35,15 @@ const ApiIndex = () => {
 		createNote,
 		updateNote,
 		deleteNote,
+		refreshNotes,
 	} = useApiNotes(selectedFolderId || undefined);
+
+	// Reload data when user becomes authenticated
+	useEffect(() => {
+		if (user) {
+			refreshFolders();
+		}
+	}, [user]);
 
 	const { theme, toggleTheme } = useTheme();
 	const { toast } = useToast();
@@ -47,12 +53,29 @@ const ApiIndex = () => {
 	const selectedNote = notes.find((n) => n.id === selectedNoteId);
 	const selectedFolder = folders.find((f) => f.id === selectedFolderId);
 
+	// Sync URL with selected note
+	useEffect(() => {
+		if (urlNoteId && urlNoteId !== selectedNoteId) {
+			setSelectedNoteId(urlNoteId);
+		}
+	}, [urlNoteId]);
+
 	// Auto-select first folder when folders load
 	useEffect(() => {
 		if (folders.length > 0 && !selectedFolderId) {
 			setSelectedFolderId(folders[0].id);
 		}
 	}, [folders, selectedFolderId]);
+
+	// When a note is selected, update URL
+	const handleSelectNote = (noteId: string | null) => {
+		if (noteId) {
+			navigate(`/note/${noteId}`);
+		} else {
+			navigate("/");
+		}
+		setSelectedNoteId(noteId);
+	};
 
 	const handleCreateNote = async (type: NoteType) => {
 		if (!selectedFolderId) {
@@ -67,7 +90,7 @@ const ApiIndex = () => {
 		const id = `note-${Date.now()}`;
 		const note = await createNote(id, selectedFolderId, type);
 		if (note) {
-			setSelectedNoteId(note.id);
+			handleSelectNote(note.id);
 		}
 	};
 
@@ -79,15 +102,25 @@ const ApiIndex = () => {
 		}
 	};
 
-	const handleSaveDrawing = async (content: string, thumbnail: string) => {
+	const handleSaveDrawing = async (
+		content: string,
+		thumbnail: string,
+		title: string,
+		canvasBackground: CanvasBackground,
+	) => {
 		if (selectedNote) {
-			await updateNote(selectedNote.id, { content, thumbnail });
+			await updateNote(selectedNote.id, {
+				content,
+				thumbnail,
+				title,
+				canvasBackground: canvasBackground,
+			});
 		}
 	};
 
-	const handleSaveText = async (content: string) => {
+	const handleSaveText = async (content: string, title: string) => {
 		if (selectedNote) {
-			await updateNote(selectedNote.id, { content });
+			await updateNote(selectedNote.id, { content, title });
 		}
 	};
 
@@ -100,7 +133,7 @@ const ApiIndex = () => {
 	const handleUpdateBackground = async (canvasBackground: CanvasBackground) => {
 		if (selectedNote) {
 			await updateNote(selectedNote.id, {
-				canvas_background: canvasBackground,
+				canvasBackground: canvasBackground,
 			});
 		}
 	};
@@ -132,12 +165,19 @@ const ApiIndex = () => {
 		);
 	}
 
+	// Helper function to safely convert date strings
+	const parseDate = (dateString: string | undefined | null): Date => {
+		if (!dateString) return new Date();
+		const date = new Date(dateString);
+		return isNaN(date.getTime()) ? new Date() : date;
+	};
+
 	// Convert API folder format to component format
 	const formattedFolders = folders.map((f) => ({
 		id: f.id,
 		name: f.name,
-		createdAt: new Date(f.created_at),
-		updatedAt: new Date(f.updated_at),
+		createdAt: parseDate(f.created_at),
+		updatedAt: parseDate(f.updated_at),
 	}));
 
 	// Convert API note format to component format
@@ -148,9 +188,9 @@ const ApiIndex = () => {
 		type: n.type,
 		content: n.content,
 		thumbnail: n.thumbnail || undefined,
-		canvasBackground: n.canvas_background,
-		createdAt: new Date(n.created_at),
-		updatedAt: new Date(n.updated_at),
+		canvasBackground: n.canvasBackground,
+		createdAt: parseDate(n.created_at),
+		updatedAt: parseDate(n.updated_at),
 	}));
 
 	return (
@@ -223,7 +263,7 @@ const ApiIndex = () => {
 				<NotesGrid
 					notes={formattedNotes}
 					selectedNoteId={selectedNoteId}
-					onSelectNote={setSelectedNoteId}
+					onSelectNote={handleSelectNote}
 					onDeleteNote={deleteNote}
 					folderName={selectedFolder?.name || "Notes"}
 				/>
@@ -232,20 +272,22 @@ const ApiIndex = () => {
 			{/* Editors */}
 			{selectedNote?.type === "drawing" && (
 				<DrawingEditor
+					key={selectedNoteId}
 					note={formattedNotes.find((n) => n.id === selectedNoteId)!}
 					onSave={handleSaveDrawing}
 					onUpdateTitle={handleUpdateTitle}
 					onUpdateBackground={handleUpdateBackground}
-					onClose={() => setSelectedNoteId(null)}
+					onClose={() => handleSelectNote(null)}
 				/>
 			)}
 
 			{selectedNote?.type === "text" && (
 				<TextEditor
+					key={selectedNoteId}
 					note={formattedNotes.find((n) => n.id === selectedNoteId)!}
 					onSave={handleSaveText}
 					onUpdateTitle={handleUpdateTitle}
-					onClose={() => setSelectedNoteId(null)}
+					onClose={() => handleSelectNote(null)}
 				/>
 			)}
 		</div>

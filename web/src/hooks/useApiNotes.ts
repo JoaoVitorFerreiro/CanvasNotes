@@ -1,6 +1,6 @@
+import { useEffect, useState } from "react";
 import { notesAPI } from "@/services/api";
 import { CanvasBackground, NoteType } from "@/types/notes";
-import { useEffect, useState } from "react";
 import { useToast } from "./use-toast";
 
 interface Note {
@@ -11,7 +11,7 @@ interface Note {
 	type: NoteType;
 	content: string;
 	thumbnail: string | null;
-	canvas_background: CanvasBackground;
+	canvasBackground: CanvasBackground;
 	path: string | null;
 	github_sha: string | null;
 	sync_status: "pending" | "synced" | "conflict";
@@ -25,7 +25,13 @@ export function useApiNotes(folderId?: string) {
 	const { toast } = useToast();
 
 	useEffect(() => {
-		loadNotes();
+		// Only load notes if we have an auth token
+		const token = localStorage.getItem("auth_token");
+		if (token) {
+			loadNotes();
+		} else {
+			setIsLoading(false);
+		}
 	}, [folderId]);
 
 	const loadNotes = async () => {

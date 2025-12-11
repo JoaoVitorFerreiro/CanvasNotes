@@ -17,6 +17,7 @@ const App = () => (
 			<BrowserRouter>
 				<Routes>
 					<Route path="/" element={<ApiIndex />} />
+					<Route path="/note/:noteId" element={<ApiIndex />} />
 					<Route path="*" element={<NotFound />} />
 				</Routes>
 			</BrowserRouter>
