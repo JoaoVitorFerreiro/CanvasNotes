@@ -1,0 +1,270 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 35 30% 97%;
+    --foreground: 25 20% 15%;
+
+    --card: 35 25% 99%;
+    --card-foreground: 25 20% 15%;
+
+    --popover: 35 25% 99%;
+    --popover-foreground: 25 20% 15%;
+
+    --primary: 15 80% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 35 20% 92%;
+    --secondary-foreground: 25 20% 25%;
+
+    --muted: 35 15% 90%;
+    --muted-foreground: 25 10% 45%;
+
+    --accent: 200 70% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 35 20% 88%;
+    --input: 35 20% 88%;
+    --ring: 15 80% 60%;
+
+    --radius: 1rem;
+
+    --sidebar-background: 35 25% 99%;
+    --sidebar-foreground: 25 20% 25%;
+    --sidebar-primary: 15 80% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 35 20% 94%;
+    --sidebar-accent-foreground: 25 20% 25%;
+    --sidebar-border: 35 20% 90%;
+    --sidebar-ring: 15 80% 60%;
+
+    /* Custom tokens */
+    --success: 145 65% 45%;
+    --warning: 40 90% 55%;
+    --canvas-bg: 0 0% 100%;
+    --canvas-lined: 220 20% 92%;
+    --canvas-grid: 220 15% 88%;
+    --canvas-dotted: 220 10% 75%;
+    
+    /* Shadows */
+    --shadow-soft: 0 2px 8px -2px hsl(25 20% 15% / 0.08), 0 4px 16px -4px hsl(25 20% 15% / 0.06);
+    --shadow-medium: 0 4px 12px -2px hsl(25 20% 15% / 0.1), 0 8px 24px -4px hsl(25 20% 15% / 0.08);
+    --shadow-large: 0 8px 24px -4px hsl(25 20% 15% / 0.12), 0 16px 48px -8px hsl(25 20% 15% / 0.1);
+    
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 25 15% 10%;
+    --foreground: 35 20% 95%;
+
+    --card: 25 15% 13%;
+    --card-foreground: 35 20% 95%;
+
+    --popover: 25 15% 13%;
+    --popover-foreground: 35 20% 95%;
+
+    --primary: 15 75% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 25 12% 18%;
+    --secondary-foreground: 35 20% 90%;
+
+    --muted: 25 10% 20%;
+    --muted-foreground: 35 10% 55%;
+
+    --accent: 200 65% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 25 12% 20%;
+    --input: 25 12% 20%;
+    --ring: 15 75% 55%;
+
+    --sidebar-background: 25 15% 11%;
+    --sidebar-foreground: 35 20% 90%;
+    --sidebar-primary: 15 75% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 25 12% 16%;
+    --sidebar-accent-foreground: 35 20% 90%;
+    --sidebar-border: 25 12% 18%;
+    --sidebar-ring: 15 75% 55%;
+
+    --canvas-bg: 25 15% 15%;
+    --canvas-lined: 25 10% 22%;
+    --canvas-grid: 25 8% 25%;
+    --canvas-dotted: 25 5% 35%;
+
+    --shadow-soft: 0 2px 8px -2px hsl(0 0% 0% / 0.3), 0 4px 16px -4px hsl(0 0% 0% / 0.25);
+    --shadow-medium: 0 4px 12px -2px hsl(0 0% 0% / 0.35), 0 8px 24px -4px hsl(0 0% 0% / 0.3);
+    --shadow-large: 0 8px 24px -4px hsl(0 0% 0% / 0.4), 0 16px 48px -8px hsl(0 0% 0% / 0.35);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .note-card {
+    @apply bg-card rounded-2xl shadow-soft hover:shadow-medium transition-all duration-base cursor-pointer overflow-hidden border border-border/50;
+  }
+
+  .note-card:hover {
+    @apply -translate-y-0.5;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors duration-fast cursor-pointer;
+  }
+
+  .sidebar-item.active {
+    @apply bg-sidebar-accent text-sidebar-foreground font-medium;
+  }
+
+  .toolbar-btn {
+    @apply p-2.5 rounded-xl hover:bg-secondary transition-colors duration-fast;
+  }
+
+  .toolbar-btn.active {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .canvas-container {
+    @apply relative w-full h-full overflow-hidden rounded-xl;
+  }
+
+  .editor-container {
+    @apply max-w-none text-foreground;
+  }
+
+  .editor-container h1 {
+    @apply text-3xl font-bold mb-4 text-foreground;
+  }
+
+  .editor-container h2 {
+    @apply text-2xl font-semibold mb-3 text-foreground;
+  }
+
+  .editor-container h3 {
+    @apply text-xl font-semibold mb-2 text-foreground;
+  }
+
+  .editor-container p {
+    @apply mb-3 leading-relaxed text-foreground;
+  }
+
+  .editor-container ul, .editor-container ol {
+    @apply mb-3 pl-6;
+  }
+
+  .editor-container ul[data-type="taskList"] {
+    @apply pl-0 list-none;
+  }
+
+  .editor-container ul[data-type="taskList"] li {
+    @apply flex items-start gap-2;
+  }
+
+  .editor-container ul[data-type="taskList"] li label {
+    @apply mt-1;
+  }
+
+  .glass-panel {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl shadow-medium;
+  }
+}
+
+@layer utilities {
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+
+  .shadow-large {
+    box-shadow: var(--shadow-large);
+  }
+
+  .transition-fast {
+    transition: all var(--transition-fast);
+  }
+
+  .transition-base {
+    transition: all var(--transition-base);
+  }
+
+  .transition-slow {
+    transition: all var(--transition-slow);
+  }
+
+  .font-display {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  .font-handwriting {
+    font-family: 'Caveat', cursive;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .canvas-blank {
+    background-color: hsl(var(--canvas-bg));
+  }
+
+  .canvas-lined {
+    background-color: hsl(var(--canvas-bg));
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 31px,
+      hsl(var(--canvas-lined)) 31px,
+      hsl(var(--canvas-lined)) 32px
+    );
+  }
+
+  .canvas-grid {
+    background-color: hsl(var(--canvas-bg));
+    background-image: 
+      linear-gradient(hsl(var(--canvas-grid)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--canvas-grid)) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .canvas-dotted {
+    background-color: hsl(var(--canvas-bg));
+    background-image: radial-gradient(circle, hsl(var(--canvas-dotted)) 1px, transparent 1px);
+    background-size: 16px 16px;
+  }
+}
